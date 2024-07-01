@@ -16,6 +16,14 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:3000")
 public class StudentController {
 
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    SectionRepository sectionRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
    // student gets transcript showing list of all enrollments
    // studentId will be temporary until Login security is implemented
@@ -23,13 +31,31 @@ public class StudentController {
    @GetMapping("/transcripts")
    public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
 
-       // TODO
+       List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
+       List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
 
-       // list course_id, sec_id, title, credit, grade in chronological order
-       // user must be a student
-	   // hint: use enrollment repository method findEnrollmentByStudentIdOrderByTermId
-       // remove the following line when done
-       return null;
+       for (Enrollment e : enrollments) {
+           EnrollmentDTO dto = new EnrollmentDTO(
+                   e.getEnrollmentId(),
+                   e.getGrade(),
+                   e.getUser().getId(),
+                   e.getUser().getName(),
+                   e.getUser().getEmail(),
+                   e.getSection().getCourse().getCourseId(),
+                   e.getSection().getCourse().getTitle(),
+                   e.getSection().getSectionNo(),
+                   e.getSection().getSecId(),
+                   e.getSection().getBuilding(),
+                   e.getSection().getRoom(),
+                   e.getSection().getTimes(),
+                   e.getSection().getCourse().getCredits(),
+                   e.getSection().getTerm().getYear(),
+                   e.getSection().getTerm().getSemester()
+           );
+           enrollmentDTOs.add(dto);
+       }
+
+       return enrollmentDTOs;
    }
 
     // student gets a list of their enrollments for the given year, semester
@@ -41,11 +67,30 @@ public class StudentController {
            @RequestParam("semester") String semester,
            @RequestParam("studentId") int studentId) {
 
+       List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
+       List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
 
-     // TODO
-	 //  hint: use enrollment repository method findByYearAndSemesterOrderByCourseId
-     //  remove the following line when done
-       return null;
+       for (Enrollment e : enrollments) {
+           EnrollmentDTO dto = new EnrollmentDTO(
+                   e.getEnrollmentId(),
+                   e.getGrade(),
+                   e.getUser().getId(),
+                   e.getUser().getName(),
+                   e.getUser().getEmail(),
+                   e.getSection().getCourse().getCourseId(),
+                   e.getSection().getCourse().getTitle(),
+                   e.getSection().getSectionNo(),
+                   e.getSection().getSecId(),
+                   e.getSection().getBuilding(),
+                   e.getSection().getRoom(),
+                   e.getSection().getTimes(),
+                   e.getSection().getCourse().getCredits(),
+                   e.getSection().getTerm().getYear(),
+                   e.getSection().getTerm().getSemester()
+           );
+           enrollmentDTOs.add(dto);
+       }
+       return enrollmentDTOs;
    }
 
 
@@ -57,17 +102,47 @@ public class StudentController {
 		    @PathVariable int sectionNo,
             @RequestParam("studentId") int studentId ) {
 
-        // TODO
+        Optional<Section> sectionOptional = sectionRepository.findById(sectionNo);
+        if (sectionOptional.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found");
+        }
 
-        // check that the Section entity with primary key sectionNo exists
-        // check that today is between addDate and addDeadline for the section
-        // check that student is not already enrolled into this section
-        // create a new enrollment entity and save.  The enrollment grade will
-        // be NULL until instructor enters final grades for the course.
+        Section section = sectionOptional.get();
+        Date currentDate = new Date();
+        if (currentDate.before(section.getTerm().getAddDate()) || currentDate.after(section.getTerm().getAddDeadline())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current date is not within the add period");
+        }
 
-        // remove the following line when done.
-        return null;
+        Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, studentId);
+        if (existingEnrollment != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student is already enrolled in this section");
+        }
 
+        User student = userRepository.findById(studentId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student not found"));
+
+        Enrollment newEnrollment = new Enrollment();
+        newEnrollment.setUser(student);
+        newEnrollment.setSection(section);
+        enrollmentRepository.save(newEnrollment);
+
+        return new EnrollmentDTO(
+                newEnrollment.getEnrollmentId(),
+                newEnrollment.getGrade(),
+                newEnrollment.getUser().getId(),
+                newEnrollment.getUser().getName(),
+                newEnrollment.getUser().getEmail(),
+                newEnrollment.getSection().getCourse().getCourseId(),
+                newEnrollment.getSection().getCourse().getTitle(),
+                newEnrollment.getSection().getSectionNo(),
+                newEnrollment.getSection().getSecId(),
+                newEnrollment.getSection().getBuilding(),
+                newEnrollment.getSection().getRoom(),
+                newEnrollment.getSection().getTimes(),
+                newEnrollment.getSection().getCourse().getCredits(),
+                newEnrollment.getSection().getTerm().getYear(),
+                newEnrollment.getSection().getTerm().getSemester()
+        );
     }
 
     // student drops a course
@@ -75,7 +150,14 @@ public class StudentController {
    @DeleteMapping("/enrollments/{enrollmentId}")
    public void dropCourse(@PathVariable("enrollmentId") int enrollmentId) {
 
-       // TODO
-       // check that today is not after the dropDeadline for section
+       Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElseThrow(() ->
+               new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enrollment not found"));
+
+       Date currentDate = new Date();
+       if (currentDate.after(enrollment.getSection().getTerm().getDropDeadline())) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current date is past the drop deadline");
+       }
+
+       enrollmentRepository.delete(enrollment);
    }
 }
