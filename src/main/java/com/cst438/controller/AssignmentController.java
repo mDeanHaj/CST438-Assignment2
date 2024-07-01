@@ -138,8 +138,10 @@ public class AssignmentController {
         // get the list of enrollments for the section related to this assignment.
 		// hint: use te enrollment repository method findEnrollmentsBySectionOrderByStudentName
         Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
-        Section s = a.getSection();
-        int secNo = s.getSectionNo();
+        if(a == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found" + assignmentId);
+        }
+        int secNo = a.getSection().getSectionNo();
         List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(secNo);
         // for each enrollment, get the grade related to the assignment and enrollment
 		//   hint: use the gradeRepository findByEnrollmentIdAndAssignmentId method.
@@ -168,10 +170,16 @@ public class AssignmentController {
     @PutMapping("/grades")
     public void updateGrades(@RequestBody List<GradeDTO> dlist) {
 
-        // TODO
-
         // for each grade in the GradeDTO list, retrieve the grade entity
         // update the score and save the entity
+        for (GradeDTO g : dlist) {
+            Grade grade = gradeRepository.findById(g.gradeId()).orElse(null);
+            if(grade == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "grade entity not found" +g.gradeId());
+            }
+            grade.setScore(g.score());
+            gradeRepository.save(grade);
+        }
 
     }
 
@@ -186,11 +194,12 @@ public class AssignmentController {
             @RequestParam("year") int year,
             @RequestParam("semester") String semester) {
 
-        // TODO remove the following line when done
 
         // return a list of assignments and (if they exist) the assignment grade
         //  for all sections that the student is enrolled for the given year and semester
 		//  hint: use the assignment repository method findByStudentIdAndYearAndSemesterOrderByDueDate
+        List<AssignmentStudentDTO> dto_list = new ArrayList<>();
+
 
         return null;
     }
