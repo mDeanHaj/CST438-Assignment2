@@ -20,6 +20,25 @@ public class Grade {
     @ManyToOne
     @JoinColumn(name="enrollment_id", nullable=false)
     private Enrollment enrollment;
- 
-    // TODO complete this class
+
+    public int getGradeId() {
+        return gradeId;
+    }
+
+    public Integer getScore() {
+        return score;
+    }
+
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+
+    public Assignment getAssignment() {
+        return assignment;
+    }
+
+    public Enrollment getEnrollment() {
+        return enrollment;
+    }
+
 }

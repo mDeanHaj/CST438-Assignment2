@@ -5,6 +5,7 @@ import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.AssignmentStudentDTO;
 import com.cst438.dto.CourseDTO;
 import com.cst438.dto.GradeDTO;
+import org.springframework.expression.spel.ast.Assign;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,12 @@ public class AssignmentController {
 
     @Autowired
     SectionRepository sectionRepository;
+
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    GradeRepository gradeRepository;
 
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
@@ -127,16 +134,32 @@ public class AssignmentController {
     @GetMapping("/assignments/{assignmentId}/grades")
     public List<GradeDTO> getAssignmentGrades(@PathVariable("assignmentId") int assignmentId) {
 
-        // TODO remove the following line when done
 
         // get the list of enrollments for the section related to this assignment.
-		// hint: use te enrollment repository method findEnrollmentsBySectionOrderByStudentName.
+		// hint: use te enrollment repository method findEnrollmentsBySectionOrderByStudentName
+        Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
+        Section s = a.getSection();
+        int secNo = s.getSectionNo();
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(secNo);
         // for each enrollment, get the grade related to the assignment and enrollment
 		//   hint: use the gradeRepository findByEnrollmentIdAndAssignmentId method.
         //   if the grade does not exist, create a grade entity and set the score to NULL
         //   and then save the new entity
+        List<GradeDTO> gradeDTOs = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            Grade g = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), assignmentId);
+            gradeDTOs.add(new GradeDTO(
+                    g.getGradeId(),
+                    g.getEnrollment().getUser().getName(),
+                    g.getEnrollment().getUser().getEmail(),
+                    g.getAssignment().getTitle(),
+                    g.getAssignment().getSection().getCourse().getCourseId(),
+                    g.getAssignment().getSection().getSecId(),
+                    (g.getScore() != null) ? g.getScore() : null
+            ));
+        }
 
-        return null;
+        return gradeDTOs;
     }
 
     // instructor uploads grades for assignment
