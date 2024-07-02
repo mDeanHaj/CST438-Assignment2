@@ -67,6 +67,10 @@ public class StudentController {
            @RequestParam("semester") String semester,
            @RequestParam("studentId") int studentId) {
 
+       if (year < 2000 || year > 2100 || !(semester.equalsIgnoreCase("Spring") || semester.equalsIgnoreCase("Summer") || semester.equalsIgnoreCase("Fall") || semester.equalsIgnoreCase("Winter"))) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid year or semester");
+       }
+
        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
        List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
 
