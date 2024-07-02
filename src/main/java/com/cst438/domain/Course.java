@@ -12,7 +12,7 @@ public class Course {
     private String title;
     private int credits;
 
-     public String getTitle() {
+    public String getTitle() {
         return title;
     }
     public void setTitle(String title) {
