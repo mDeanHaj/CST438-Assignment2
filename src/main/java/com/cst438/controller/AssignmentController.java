@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,8 +70,12 @@ public class AssignmentController {
     public AssignmentDTO createAssignment(
             @RequestBody AssignmentDTO dto) {
         Section section = sectionRepository.findById(dto.secNo()).orElse(null);
-        if (section == null ){
+        Date dueDate = dto.dueDate();
+        if (section == null){
             throw new ResponseStatusException( HttpStatus.NOT_FOUND, "ERROR: Section " + dto.secNo() + " not found.");
+        } //if
+        if (dueDate.before(section.getTerm().getStartDate()) || dueDate.after(section.getTerm().getEndDate())) {
+            throw new ResponseStatusException( HttpStatus.UNPROCESSABLE_ENTITY, "ERROR: Due date " + dto.dueDate() + " is invalid. The due date must be between " + section.getTerm().getStartDate() + " and " + section.getTerm().getEndDate() + ".");
         } //if
 
         Assignment a = new Assignment();
@@ -98,9 +103,13 @@ public class AssignmentController {
 
         // TODO remove the following line when done
         Assignment a = assignmentRepository.findById(dto.id()).orElse(null);
+        Date dueDate = dto.dueDate();
         if (a == null){
             throw new ResponseStatusException( HttpStatus.NOT_FOUND, "ERROR: Assignment " + dto.title() + " not found.");
-        }
+        } //if
+        if (dueDate.before(a.getSection().getTerm().getStartDate()) || dueDate.after(a.getSection().getTerm().getEndDate())) {
+            throw new ResponseStatusException( HttpStatus.UNPROCESSABLE_ENTITY, "ERROR: Due date " + dto.dueDate() + " is invalid. The due date must be between " + a.getSection().getTerm().getStartDate() + " and " + a.getSection().getTerm().getEndDate() + ".");
+        } //if
 
         a.setTitle(dto.title());
         a.setDueDate(dto.dueDate());
@@ -122,10 +131,10 @@ public class AssignmentController {
     @DeleteMapping("/assignments/{assignmentId}")
     public void deleteAssignment(@PathVariable("assignmentId") int assignmentId) {
         Assignment a = assignmentRepository.findById(assignmentId).orElse(null);
-        // if course does not exist, do nothing.
-        if (a != null) {
-            assignmentRepository.delete(a);
+        if (a == null){
+            throw new ResponseStatusException( HttpStatus.NOT_FOUND, "ERROR: Assignment " + assignmentId + " not found.");
         }
+        assignmentRepository.delete(a);
     }
 
     // instructor gets grades for assignment ordered by student name

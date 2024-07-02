@@ -37,8 +37,8 @@ public class EnrollmentController {
                     e.getUser().getEmail(),
                     e.getSection().getCourse().getCourseId(),
                     e.getSection().getCourse().getTitle(),
-                    e.getSection().getSectionNo(),
                     e.getSection().getSecId(),
+                    e.getSection().getSectionNo(),
                     e.getSection().getBuilding(),
                     e.getSection().getRoom(),
                     e.getSection().getTimes(),
@@ -65,6 +65,7 @@ public class EnrollmentController {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found " +d.enrollmentId() );
             }
             e.setGrade(d.grade());
+
             enrollmentRepository.save(e);
         }
 
