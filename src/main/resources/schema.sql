@@ -31,7 +31,6 @@ create table section (
     foreign key(term_id) references term(term_id)
 );
 
-
 create sequence user_seq;
 ALTER SEQUENCE user_seq RESTART WITH 7000;
 
