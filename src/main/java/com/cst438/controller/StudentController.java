@@ -31,6 +31,11 @@ public class StudentController {
    @GetMapping("/transcripts")
    public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
 
+       User student = userRepository.findById(studentId).orElse(null);
+       if(student == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
+       }
+
        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
        List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
 
@@ -66,6 +71,11 @@ public class StudentController {
            @RequestParam("year") int year,
            @RequestParam("semester") String semester,
            @RequestParam("studentId") int studentId) {
+
+       User student = userRepository.findById(studentId).orElse(null);
+       if(student == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
+       }
 
        if (year < 2000 || year > 2100 || !(semester.equalsIgnoreCase("Spring") || semester.equalsIgnoreCase("Summer") || semester.equalsIgnoreCase("Fall") || semester.equalsIgnoreCase("Winter"))) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid year or semester");
@@ -106,6 +116,11 @@ public class StudentController {
 		    @PathVariable int sectionNo,
             @RequestParam("studentId") int studentId ) {
 
+        User student = userRepository.findById(studentId).orElse(null);
+        if(student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
+        }
+
         Optional<Section> sectionOptional = sectionRepository.findById(sectionNo);
         if (sectionOptional.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found");
@@ -121,9 +136,6 @@ public class StudentController {
         if (existingEnrollment != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student is already enrolled in this section");
         }
-
-        User student = userRepository.findById(studentId).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student not found"));
 
         Enrollment newEnrollment = new Enrollment();
         newEnrollment.setUser(student);

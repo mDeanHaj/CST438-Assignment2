@@ -3,9 +3,7 @@ package com.cst438.controller;
 import com.cst438.domain.*;
 import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.AssignmentStudentDTO;
-import com.cst438.dto.CourseDTO;
 import com.cst438.dto.GradeDTO;
-import org.springframework.expression.spel.ast.Assign;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -39,12 +38,22 @@ public class AssignmentController {
     @Autowired
     GradeRepository gradeRepository;
 
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    private TermRepository termRepository;
+
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
     // Haris
     @GetMapping("/sections/{secNo}/assignments")
     public List<AssignmentDTO> getAssignments(
             @PathVariable("secNo") int secNo) {
+        Optional<Section> section = sectionRepository.findById(secNo);
+        if (section.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Section %s not found", secNo));
+        }
+
         List<Assignment> assignmentList = assignmentRepository.findBySectionNoOrderByDueDate(secNo);
         List<AssignmentDTO> assignmentDTOList = new ArrayList<>();
 
@@ -105,7 +114,7 @@ public class AssignmentController {
         Assignment a = assignmentRepository.findById(dto.id()).orElse(null);
         Date dueDate = dto.dueDate();
         if (a == null){
-            throw new ResponseStatusException( HttpStatus.NOT_FOUND, "ERROR: Assignment " + dto.title() + " not found.");
+            throw new ResponseStatusException( HttpStatus.NOT_FOUND, "ERROR: Assignment " + dto.id() + " not found.");
         } //if
         if (dueDate.before(a.getSection().getTerm().getStartDate()) || dueDate.after(a.getSection().getTerm().getEndDate())) {
             throw new ResponseStatusException( HttpStatus.UNPROCESSABLE_ENTITY, "ERROR: Due date " + dto.dueDate() + " is invalid. The due date must be between " + a.getSection().getTerm().getStartDate() + " and " + a.getSection().getTerm().getEndDate() + ".");
@@ -203,6 +212,15 @@ public class AssignmentController {
             @RequestParam("year") int year,
             @RequestParam("semester") String semester) {
 
+        User student = userRepository.findById(studentId).orElse(null);
+        if(student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
+        }
+
+        Term term = termRepository.findByYearAndSemester(year, semester);
+        if(term == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "term not found");
+        }
 
         // return a list of assignments and (if they exist) the assignment grade
         //  for all sections that the student is enrolled for the given year and semester

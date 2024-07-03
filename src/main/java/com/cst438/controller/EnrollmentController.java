@@ -3,6 +3,8 @@ package com.cst438.controller;
 
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Section;
+import com.cst438.domain.SectionRepository;
 import com.cst438.dto.EnrollmentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -18,12 +21,19 @@ public class EnrollmentController {
 
     @Autowired
     EnrollmentRepository enrollmentRepository;
+    @Autowired
+    private SectionRepository sectionRepository;
 
     // instructor downloads student enrollments for a section, ordered by student name
     // user must be instructor for the section
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(
             @PathVariable("sectionNo") int sectionNo ) {
+
+        Optional<Section> section = sectionRepository.findById(sectionNo);
+        if (section.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, sectionNo + " is not found.");
+        }
 
         List<Enrollment> enrollments= enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
         List<EnrollmentDTO> dto_list = new ArrayList<>();
