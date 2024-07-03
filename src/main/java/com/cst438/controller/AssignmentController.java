@@ -210,22 +210,29 @@ public class AssignmentController {
         List<Assignment> assignments = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(studentId, year, semester);
         List<AssignmentStudentDTO> dto_list = new ArrayList<>();
         for (Assignment assignment : assignments) {
-            List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
-            Grade grade = new Grade();
-            for (Enrollment e : enrollments) {
-                grade = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), assignment.getAssignmentId());
-                if (grade != null) {
-                    dto_list.add(new AssignmentStudentDTO(
-                            assignment.getAssignmentId(),
-                            assignment.getTitle(),
-                            assignment.getDueDate(),
-                            assignment.getSection().getCourse().getCourseId(),
-                            assignment.getSection().getSecId(),
-                            (grade.getScore() != null) ? grade.getScore() : null
-                    ));
-                }
-            }
-        }
+            Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(assignment.getSection().getSectionNo(), studentId);
+            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), assignment.getAssignmentId());
+            if (grade == null) {
+                dto_list.add(new AssignmentStudentDTO(
+                        assignment.getAssignmentId(),
+                        assignment.getTitle(),
+                        assignment.getDueDate(),
+                        assignment.getSection().getCourse().getCourseId(),
+                        assignment.getSection().getSecId(),
+                        null
+                ));
+            } //if
+            else {
+                dto_list.add(new AssignmentStudentDTO(
+                        assignment.getAssignmentId(),
+                        assignment.getTitle(),
+                        assignment.getDueDate(),
+                        assignment.getSection().getCourse().getCourseId(),
+                        assignment.getSection().getSecId(),
+                        (grade.getScore() != null) ? grade.getScore() : null
+                ));
+            } //else
+        } //for
         return dto_list;
     }
 }

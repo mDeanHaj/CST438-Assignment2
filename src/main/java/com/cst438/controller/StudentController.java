@@ -83,8 +83,8 @@ public class StudentController {
                    e.getUser().getEmail(),
                    e.getSection().getCourse().getCourseId(),
                    e.getSection().getCourse().getTitle(),
-                   e.getSection().getSectionNo(),
                    e.getSection().getSecId(),
+                   e.getSection().getSectionNo(),
                    e.getSection().getBuilding(),
                    e.getSection().getRoom(),
                    e.getSection().getTimes(),
@@ -114,7 +114,7 @@ public class StudentController {
         Section section = sectionOptional.get();
         Date currentDate = new Date();
         if (currentDate.before(section.getTerm().getAddDate()) || currentDate.after(section.getTerm().getAddDeadline())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current date is not within the add period");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: The current date is not within the enrollment period; enrollment started " + section.getTerm().getAddDate() + " and ended " + section.getTerm().getAddDeadline() + ".");
         }
 
         Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, studentId);
@@ -138,8 +138,8 @@ public class StudentController {
                 newEnrollment.getUser().getEmail(),
                 newEnrollment.getSection().getCourse().getCourseId(),
                 newEnrollment.getSection().getCourse().getTitle(),
-                newEnrollment.getSection().getSectionNo(),
                 newEnrollment.getSection().getSecId(),
+                newEnrollment.getSection().getSectionNo(),
                 newEnrollment.getSection().getBuilding(),
                 newEnrollment.getSection().getRoom(),
                 newEnrollment.getSection().getTimes(),
