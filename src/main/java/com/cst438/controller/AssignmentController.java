@@ -168,15 +168,24 @@ public class AssignmentController {
         List<GradeDTO> gradeDTOs = new ArrayList<>();
         for (Enrollment e : enrollments) {
             Grade g = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), assignmentId);
-            gradeDTOs.add(new GradeDTO(
-                    g.getGradeId(),
-                    g.getEnrollment().getUser().getName(),
-                    g.getEnrollment().getUser().getEmail(),
-                    g.getAssignment().getTitle(),
-                    g.getAssignment().getSection().getCourse().getCourseId(),
-                    g.getAssignment().getSection().getSecId(),
-                    (g.getScore() != null) ? g.getScore() : null
-            ));
+            if (g == null) {
+                Grade noGrade = new Grade();
+                noGrade.setAssignment(a);
+                noGrade.setEnrollment(e);
+                noGrade.setScore(null);
+                gradeRepository.save(noGrade);
+            }
+            else {
+                gradeDTOs.add(new GradeDTO(
+                        g.getGradeId(),
+                        g.getEnrollment().getUser().getName(),
+                        g.getEnrollment().getUser().getEmail(),
+                        g.getAssignment().getTitle(),
+                        g.getAssignment().getSection().getCourse().getCourseId(),
+                        g.getAssignment().getSection().getSecId(),
+                        (g.getScore() != null) ? g.getScore() : null
+                ));
+            }
         }
 
         return gradeDTOs;
