@@ -14,8 +14,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EnrollmentControllerSystemTest {
 
     //    public static final String CHROME_DRIVER_FILE_LOCATION = "C:\\chromedriver.exe";
+    // Haris
     public static final String CHROME_DRIVER_FILE_LOCATION =
-            "C:/chromedriver-win64/chromedriver.exe";;
+            "/Users/hj739/Downloads/chromedriver-mac-arm64/chromedriver";
+//    public static final String CHROME_DRIVER_FILE_LOCATION =
+//            "C:/chromedriver-win64/chromedriver.exe";;
     public static final String URL = "http://localhost:3000";
     public static final int SLEEP_DURATION = 1000; // 1 second.
 
