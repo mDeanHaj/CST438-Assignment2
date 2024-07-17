@@ -38,14 +38,24 @@ public class EnrollmentControllerUnitTest {
     public void enrollIntoSection() throws Exception {
         MockHttpServletResponse response;
 
-        int sectionNo = 1; // existing sectionNo
-        int studentId = 1; // existing studentId
+        int sectionNo = 12; // existing sectionNo
+        int studentId = 3; // existing studentId
+
+        EnrollmentDTO enrollmentdto = new EnrollmentDTO(
+                0,
+                null,
+                studentId,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "cst363", "Introduction to Database", 1, sectionNo, "052","104","M W 10:00-11:50",4,2025, "Spring"
+        );
 
         response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/enrollments/sections/" + sectionNo + "?studentId=" + studentId)
+                                .post("/enrollments/sections/"+ sectionNo + "?studentId=" + studentId)
                                 .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(enrollmentdto)))
                 .andReturn()
                 .getResponse();
 
@@ -54,7 +64,7 @@ public class EnrollmentControllerUnitTest {
         EnrollmentDTO result = fromJsonString(response.getContentAsString(), EnrollmentDTO.class);
 
         assertNotNull(result);
-        assertEquals(sectionNo, result.sectionId());
+        assertEquals(sectionNo, result.sectionNo());
         assertEquals(studentId, result.studentId());
 
         // Clean up after test
@@ -69,11 +79,21 @@ public class EnrollmentControllerUnitTest {
         int sectionNo = 1; // existing sectionNo
         int studentId = 1; // existing studentId already enrolled
 
+        EnrollmentDTO enrollmentdto = new EnrollmentDTO(
+                0,
+                null,
+                studentId,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "cst363", "Introduction to Database", 1, sectionNo, "052","104","M W 10:00-11:50",4,2025, "Spring"
+        );
+
         response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/enrollments/sections/" + sectionNo + "?studentId=" + studentId)
+                                .post("/enrollments/sections/"+ sectionNo + "?studentId=" + studentId)
                                 .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(enrollmentdto)))
                 .andReturn()
                 .getResponse();
 
@@ -89,11 +109,21 @@ public class EnrollmentControllerUnitTest {
         int sectionNo = 9999; // non-existent sectionNo
         int studentId = 1; // existing studentId
 
+        EnrollmentDTO enrollmentdto = new EnrollmentDTO(
+                0,
+                null,
+                studentId,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "cst363", "Introduction to Database", 1, sectionNo, "052","104","M W 10:00-11:50",4,2025, "Spring"
+        );
+
         response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/enrollments/sections/" + sectionNo + "?studentId=" + studentId)
+                                .post("/enrollments/sections/"+ sectionNo + "?studentId=" + studentId)
                                 .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(enrollmentdto)))
                 .andReturn()
                 .getResponse();
 
@@ -109,11 +139,21 @@ public class EnrollmentControllerUnitTest {
         int sectionNo = 2; // sectionNo with passed deadline
         int studentId = 1; // existing studentId
 
+        EnrollmentDTO enrollmentdto = new EnrollmentDTO(
+                0,
+                null,
+                studentId,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "cst363", "Introduction to Database", 1, sectionNo, "052","104","M W 10:00-11:50",4,2025, "Spring"
+        );
+
         response = mvc.perform(
                         MockMvcRequestBuilders
-                                .post("/enrollments/sections/" + sectionNo + "?studentId=" + studentId)
+                                .post("/enrollments/sections/"+ sectionNo + "?studentId=" + studentId)
                                 .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(enrollmentdto)))
                 .andReturn()
                 .getResponse();
 

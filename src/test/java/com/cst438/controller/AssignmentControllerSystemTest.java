@@ -149,6 +149,59 @@ public class AssignmentControllerSystemTest {
     }
 
     @Test
+    public void systemTestEnterGrade() throws Exception {
+        // verify grades are added to added assignment through enrollments
+
+
+        // enter 2024, Spring,  and click show sections
+        driver.findElement(By.id("year")).sendKeys("2024");
+        driver.findElement(By.id("semester")).sendKeys("Spring");
+        driver.findElement(By.id("searchSections")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // find and click button to view enrollments for section 8
+        WebElement rowSec8 = driver.findElement(By.xpath("//tr[td='8']"));
+        WebElement link = rowSec8.findElement(By.id("viewEnrollments"));
+        link.click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // edit and save grade in dialog
+        WebElement rowE2 = driver.findElement(By.xpath("//tr[td='2']"));
+        link = rowE2.findElement(By.id("editEnrollment"));
+        link.click();
+        Thread.sleep(SLEEP_DURATION);
+
+        //enter grade for assignment and save
+        WebElement eGrade = driver.findElement(By.id("editGrade"));
+        String ogGrade = eGrade.getAttribute("value");
+        eGrade.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        Thread.sleep(SLEEP_DURATION);
+        eGrade.sendKeys("D");
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+        String message = driver.findElement(By.id("message")).getText();
+        assertTrue(message.startsWith("Grade saved"));
+
+        //verify grade was saved
+        rowE2 = driver.findElement(By.xpath("//tr[td='2']"));
+        link = rowE2.findElement(By.id("editEnrollment"));
+        link.click();
+        Thread.sleep(SLEEP_DURATION);
+        eGrade = driver.findElement(By.id("editGrade"));
+        assertEquals("D",eGrade.getAttribute("value"));
+        //return grade to original value
+        eGrade.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        Thread.sleep(SLEEP_DURATION);
+        eGrade.sendKeys(ogGrade);
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+        message = driver.findElement(By.id("message")).getText();
+        assertTrue(message.startsWith("Grade saved"));
+
+
+    }
+
+    @Test
     public void systemTestAddGrade() throws Exception {
         // verify grades are added to assignments
 
