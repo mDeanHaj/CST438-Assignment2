@@ -3,10 +3,7 @@ package com.cst438.controller;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
@@ -148,6 +145,61 @@ public class AssignmentControllerSystemTest {
         assertTrue(message.startsWith("Assignment deleted"));
         assertThrows(NoSuchElementException.class, () ->
                 driver.findElement(By.xpath("//tr[td='Assignment Added']")));
+
+    }
+
+    @Test
+    public void systemTestAddGrade() throws Exception {
+        // verify grades are added to assignments
+
+
+        // enter 2024, Spring,  and click show sections
+        driver.findElement(By.id("year")).sendKeys("2024");
+        driver.findElement(By.id("semester")).sendKeys("Spring");
+        driver.findElement(By.id("sections")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // find and click button to view assignments for section 8
+        WebElement rowSec8 = driver.findElement(By.xpath("//tr[td='8']"));
+        WebElement link = rowSec8.findElement(By.id("assignments"));
+        link.click();
+        Thread.sleep(SLEEP_DURATION);
+
+        // find and click button to grade assignment 1
+        WebElement rowA1 = driver.findElement(By.xpath("//tr[td='1']"));
+        link = rowA1.findElement(By.id("viewGrade"));
+        link.click();
+        Thread.sleep(SLEEP_DURATION);
+
+        //enter grade for assignment and save
+        WebElement sGrade = driver.findElement(By.tagName("input"));
+        String ogGrade = sGrade.getAttribute("value");
+        sGrade.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        Thread.sleep(SLEEP_DURATION);
+        sGrade.sendKeys("55");
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+        String message = driver.findElement(By.id("message")).getText();
+        assertTrue(message.startsWith("Grades saved"));
+        driver.findElement(By.id("close")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        //verify grade is saved and revert to original grade
+        rowA1 = driver.findElement(By.xpath("//tr[td='1']"));
+        link = rowA1.findElement(By.id("viewGrade"));
+        link.click();
+        Thread.sleep(SLEEP_DURATION);
+        sGrade = driver.findElement(By.tagName("input"));
+        assertEquals("55",sGrade.getAttribute("value"));
+        sGrade.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        Thread.sleep(SLEEP_DURATION);
+        sGrade.sendKeys(ogGrade);
+        driver.findElement(By.id("save")).click();
+        Thread.sleep(SLEEP_DURATION);
+        message = driver.findElement(By.id("message")).getText();
+        assertTrue(message.startsWith("Grades saved"));
+        driver.findElement(By.id("close")).click();
+        Thread.sleep(SLEEP_DURATION);
 
     }
 }
