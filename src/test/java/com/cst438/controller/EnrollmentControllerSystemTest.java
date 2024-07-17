@@ -13,9 +13,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EnrollmentControllerSystemTest {
 
-//    public static final String CHROME_DRIVER_FILE_LOCATION = "C:\\chromedriver.exe";
-public static final String CHROME_DRIVER_FILE_LOCATION =
-        "/Users/hj739/Downloads/chromedriver-mac-arm64/chromedriver";
+    //    public static final String CHROME_DRIVER_FILE_LOCATION = "C:\\chromedriver.exe";
+    public static final String CHROME_DRIVER_FILE_LOCATION =
+            "C:/chromedriver-win64/chromedriver.exe";;
     public static final String URL = "http://localhost:3000";
     public static final int SLEEP_DURATION = 1000; // 1 second.
 
@@ -48,34 +48,42 @@ public static final String CHROME_DRIVER_FILE_LOCATION =
         Thread.sleep(SLEEP_DURATION);
 
         // select a section to enroll
-        WebElement section = driver.findElement(By.id("sectionSelect"));
-        section.sendKeys("1"); // replace with sectionNo
-        WebElement studentId = driver.findElement(By.id("studentId"));
-        studentId.sendKeys("1"); // replace with studentId
-        WebElement enrollButton = driver.findElement(By.id("enrollButton"));
-        enrollButton.click();
+        driver.findElement(By.id("sectionSelect")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+        //confirm enroll
+        List<WebElement> confirmButtons = driver
+                .findElement(By.className("react-confirm-alert-button-group"))
+                .findElements(By.tagName("button"));
+        assertEquals(2, confirmButtons.size());
+        confirmButtons.get(0).click();
         Thread.sleep(SLEEP_DURATION);
 
         // verify enrollment success
-        String message = driver.findElement(By.id("enrollMessage")).getText();
-        assertTrue(message.contains("Enrollment successful"));
+        String message = driver.findElement(By.id("message")).getText();
+        assertTrue(message.startsWith("enrollment added"));
 
         // navigate to schedule page
-        WebElement scheduleLink = driver.findElement(By.id("schedule"));
-        scheduleLink.click();
+        driver.findElement(By.id("schedule")).click();
         Thread.sleep(SLEEP_DURATION);
 
+        //search for new enrollment in schedule
+        driver.findElement(By.id("year")).sendKeys("2024");
+        driver.findElement(By.id("semester")).sendKeys("Fall");
+        driver.findElement(By.id("search")).click();
+        Thread.sleep(SLEEP_DURATION);
+
+
         // verify new section appears in schedule
-        WebElement newSection = driver.findElement(By.xpath("//tr[td='1']")); // replace with sectionNo
-        assertNotNull(newSection);
+        WebElement row338 = driver.findElement(By.xpath("//tr[td='cst338']"));
+        assertEquals("cst338",row338.findElement(By.id("courseId")).getText());
 
         // clean up by unenrolling
-        WebElement unenrollButton = newSection.findElement(By.id("unenrollButton"));
-        unenrollButton.click();
+        row338.findElement(By.id("unenroll")).click();
         Thread.sleep(SLEEP_DURATION);
 
         // verify unenrollment success
-        String unenrollMessage = driver.findElement(By.id("unenrollMessage")).getText();
-        assertTrue(unenrollMessage.contains("Unenrollment successful"));
+        message = driver.findElement(By.id("message")).getText();
+        assertTrue(message.startsWith("Course dropped"));
     }
 }
