@@ -247,7 +247,7 @@ public class EnrollmentControllerUnitTest {
         e = enrollmentRepository.findById(t.enrollmentId()).orElse(null);
         assertNotNull(e);
         assertEquals(3, e.getEnrollmentId());
-        assertEquals(null, e.getGrade());
+        assertEquals(ogGrade, e.getGrade());
 
     }
 

@@ -209,12 +209,12 @@ public class AssignmentControllerSystemTest {
         // enter 2024, Spring,  and click show sections
         driver.findElement(By.id("year")).sendKeys("2024");
         driver.findElement(By.id("semester")).sendKeys("Spring");
-        driver.findElement(By.id("sections")).click();
+        driver.findElement(By.id("searchSections")).click();
         Thread.sleep(SLEEP_DURATION);
 
         // find and click button to view assignments for section 8
         WebElement rowSec8 = driver.findElement(By.xpath("//tr[td='8']"));
-        WebElement link = rowSec8.findElement(By.id("assignments"));
+        WebElement link = rowSec8.findElement(By.id("viewAssignments"));
         link.click();
         Thread.sleep(SLEEP_DURATION);
 
