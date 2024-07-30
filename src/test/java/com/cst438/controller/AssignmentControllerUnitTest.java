@@ -34,11 +34,11 @@ public class AssignmentControllerUnitTest {
     @Autowired
     MockMvc mvc;
 
-    @Autowired
-    AssignmentRepository assignmentRepository;
+//    @Autowired
+//    AssignmentRepository assignmentRepository;
 
-    @Autowired
-    GradeRepository gradeRepository;
+//    @Autowired
+//    GradeRepository gradeRepository;
 
     @Autowired
     TermRepository termRepository;
