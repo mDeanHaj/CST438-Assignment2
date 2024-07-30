@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GradebookServiceProxy {
 
+
     Queue gradebookServiceQueue = new Queue("gradebook_service", true);
 
     @Bean
