@@ -5,6 +5,7 @@ import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.AssignmentStudentDTO;
 import com.cst438.dto.GradeDTO;
 import com.cst438.dto.SectionDTO;
+import com.cst438.service.RegistrarServiceProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
