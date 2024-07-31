@@ -25,6 +25,9 @@ public class RegistrarServiceProxy {
     @Autowired
     private EnrollmentRepository enrollmentRepository;
 
+    @Autowired
+    private TermRepository termRepository;
+
     Queue registrarServiceQueue = new Queue("registrar_service", true);
 
     @Bean
@@ -40,34 +43,107 @@ public class RegistrarServiceProxy {
         try {
             String[] parts = message.split(" ", 2);
             String action = parts[0];
-            if (action.equals("addCourse")) {
-                CourseDTO dto = fromJsonString(parts[1], CourseDTO.class);
-                Course c = new Course();
-                c.setCourseId(dto.courseId());
-                c.setTitle(dto.title());
-                c.setCredits(dto.credits());
-                courseRepository.save(c);
-            } else if (action.equals("deleteCourse")) {
-                courseRepository.deleteById(parts[1]);
-            } else if (action.equals("updateCourse")) {
-                CourseDTO dto = fromJsonString(parts[1], CourseDTO.class);
-                Course c = courseRepository.findById(dto.courseId()).orElse(null);
-                if (c != null) {
-                    c.setTitle(dto.title());
-                    c.setCredits(dto.credits());
-                    courseRepository.save(c);
-                }
-            } else if (action.equals("updateEnrollment")) {
-                EnrollmentDTO dto = fromJsonString(parts[1], EnrollmentDTO.class);
-                Enrollment e = enrollmentRepository.findById(dto.enrollmentId()).orElse(null);
-                if (e != null) {
-                    e.setGrade(dto.grade());
-                    enrollmentRepository.save(e);
-                }
+
+            switch (action) {
+                case "addCourse":
+                    CourseDTO courseDTO = fromJsonString(parts[1], CourseDTO.class);
+                    Course course = new Course();
+                    course.setCourseId(courseDTO.courseId());
+                    course.setTitle(courseDTO.title());
+                    course.setCredits(courseDTO.credits());
+                    courseRepository.save(course);
+                    break;
+
+                case "updateCourse":
+                    CourseDTO updateCourseDTO = fromJsonString(parts[1], CourseDTO.class);
+                    Course existingCourse = courseRepository.findById(updateCourseDTO.courseId()).orElse(null);
+                    if (existingCourse != null) {
+                        existingCourse.setTitle(updateCourseDTO.title());
+                        existingCourse.setCredits(updateCourseDTO.credits());
+                        courseRepository.save(existingCourse);
+                    }
+                    break;
+
+                case "deleteCourse":
+                    courseRepository.deleteById(parts[1]);
+                    break;
+
+                case "addSection":
+                    SectionDTO sectionDTO = fromJsonString(parts[1], SectionDTO.class);
+                    Section section = new Section();
+                    section.setSectionNo(sectionDTO.secNo());
+                    section.setSecId(sectionDTO.secId());
+                    section.setBuilding(sectionDTO.building());
+                    section.setRoom(sectionDTO.room());
+                    section.setTimes(sectionDTO.times());
+                    section.setInstructor_email(sectionDTO.instructorEmail());
+                    section.setCourse(courseRepository.findById(sectionDTO.courseId()).orElse(null));
+                    section.setTerm(termRepository.findByYearAndSemester(sectionDTO.year(), sectionDTO.semester()));
+                    sectionRepository.save(section);
+                    break;
+
+                case "updateSection":
+                    SectionDTO updateSectionDTO = fromJsonString(parts[1], SectionDTO.class);
+                    Section existingSection = sectionRepository.findById(updateSectionDTO.secNo()).orElse(null);
+                    if (existingSection != null) {
+                        existingSection.setSecId(updateSectionDTO.secId());
+                        existingSection.setBuilding(updateSectionDTO.building());
+                        existingSection.setRoom(updateSectionDTO.room());
+                        existingSection.setTimes(updateSectionDTO.times());
+                        existingSection.setInstructor_email(updateSectionDTO.instructorEmail());
+                        sectionRepository.save(existingSection);
+                    }
+                    break;
+
+                case "deleteSection":
+                    sectionRepository.deleteById(Integer.parseInt(parts[1]));
+                    break;
+
+                case "createUser":
+                    UserDTO userDTO = fromJsonString(parts[1], UserDTO.class);
+                    User user = new User();
+                    user.setId(userDTO.id());
+                    user.setName(userDTO.name());
+                    user.setEmail(userDTO.email());
+                    user.setType(userDTO.type());
+                    userRepository.save(user);
+                    break;
+
+                case "updateUser":
+                    UserDTO updateUserDTO = fromJsonString(parts[1], UserDTO.class);
+                    User existingUser = userRepository.findById(updateUserDTO.id()).orElse(null);
+                    if (existingUser != null) {
+                        existingUser.setName(updateUserDTO.name());
+                        existingUser.setEmail(updateUserDTO.email());
+                        existingUser.setType(updateUserDTO.type());
+                        userRepository.save(existingUser);
+                    }
+                    break;
+
+                case "deleteUser":
+                    userRepository.deleteById(Integer.parseInt(parts[1]));
+                    break;
+
+                case "enrollCourse": // Updated from addCourse
+                    EnrollmentDTO enrollmentDTO = fromJsonString(parts[1], EnrollmentDTO.class);
+                    Enrollment enrollment = new Enrollment();
+                    enrollment.setEnrollmentId(enrollmentDTO.enrollmentId());
+                    enrollment.setGrade(enrollmentDTO.grade());
+                    enrollment.setUser(userRepository.findById(enrollmentDTO.studentId()).orElse(null));
+                    enrollment.setSection(sectionRepository.findById(enrollmentDTO.sectionNo()).orElse(null));
+                    enrollmentRepository.save(enrollment);
+                    break;
+
+                case "dropCourse":
+                    enrollmentRepository.deleteById(Integer.parseInt(parts[1]));
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unknown action: " + action);
             }
-            // Handle other actions similarly...
         } catch (Exception e) {
-            throw new RuntimeException("ERROR: Exception in receiveFromRegistrar " + e.getMessage());
+            System.err.println("ERROR: Exception in receiveFromRegistrar " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
