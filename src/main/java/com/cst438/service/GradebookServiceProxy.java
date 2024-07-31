@@ -66,7 +66,7 @@ public class GradebookServiceProxy {
         sendMessage("deleteUser " + userId);
     }
 
-    public void addCourse(EnrollmentDTO enrollment) {
+    public void enrollCourse(EnrollmentDTO enrollment) {
         sendMessage("addCourse " + asJsonString(enrollment));
     }
 

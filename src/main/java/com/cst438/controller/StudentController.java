@@ -161,7 +161,7 @@ public class StudentController {
                 newEnrollment.getSection().getTerm().getYear(),
                 newEnrollment.getSection().getTerm().getSemester()
         );
-        gradebookServiceProxy.addCourse(enrollmentDTO);
+        gradebookServiceProxy.enrollCourse(enrollmentDTO);
         return enrollmentDTO;
     }
 
