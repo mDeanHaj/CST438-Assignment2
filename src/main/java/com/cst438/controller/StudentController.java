@@ -2,6 +2,7 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
+import com.cst438.service.GradebookServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,10 @@ public class StudentController {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    private GradebookServiceProxy gradebookServiceProxy;
 
-   // student gets transcript showing list of all enrollments
+    // student gets transcript showing list of all enrollments
    // studentId will be temporary until Login security is implemented
    //example URL  /transcript?studentId=19803
    @GetMapping("/transcripts")
@@ -141,8 +144,7 @@ public class StudentController {
         newEnrollment.setUser(student);
         newEnrollment.setSection(section);
         enrollmentRepository.save(newEnrollment);
-
-        return new EnrollmentDTO(
+        EnrollmentDTO enrollmentDTO = new EnrollmentDTO(
                 newEnrollment.getEnrollmentId(),
                 newEnrollment.getGrade(),
                 newEnrollment.getUser().getId(),
@@ -159,6 +161,8 @@ public class StudentController {
                 newEnrollment.getSection().getTerm().getYear(),
                 newEnrollment.getSection().getTerm().getSemester()
         );
+        gradebookServiceProxy.addCourse(enrollmentDTO);
+        return enrollmentDTO;
     }
 
     // student drops a course
@@ -175,5 +179,6 @@ public class StudentController {
        }
 
        enrollmentRepository.delete(enrollment);
+       gradebookServiceProxy.dropCourse(enrollmentId);
    }
 }

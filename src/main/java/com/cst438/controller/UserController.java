@@ -3,6 +3,7 @@ package com.cst438.controller;
 import com.cst438.domain.User;
 import com.cst438.domain.UserRepository;
 import com.cst438.dto.UserDTO;
+import com.cst438.service.GradebookServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,8 @@ public class UserController {
     UserRepository userRepository;
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    @Autowired
+    private GradebookServiceProxy gradebookServiceProxy;
 
     @GetMapping("/users")
     public List<UserDTO> findAllUsers() {
@@ -56,8 +59,10 @@ public class UserController {
             // invalid type
             throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "invalid user type");
         }
+        UserDTO newUserDTO = new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getType());
         userRepository.save(user);
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getType());
+        gradebookServiceProxy.createUser(newUserDTO);
+        return newUserDTO;
     }
 
     @PutMapping("/users")
@@ -75,15 +80,18 @@ public class UserController {
             // invalid type
             throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "invalid user type");
         }
+        UserDTO newUserDTO = new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getType());
         userRepository.save(user);
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getType());
+        gradebookServiceProxy.updateUser(newUserDTO);
+        return newUserDTO;
     }
 
     @DeleteMapping("/users/{id}")
-    public void  updateUser(@PathVariable("id") int id) {
+    public void  deleteUser(@PathVariable("id") int id) {
         User user = userRepository.findById(id).orElse(null);
         if (user!=null) {
             userRepository.delete(user);
+            gradebookServiceProxy.deleteUser(id);
         }
 
     }
