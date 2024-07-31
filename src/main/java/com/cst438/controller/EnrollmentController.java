@@ -1,6 +1,5 @@
 package com.cst438.controller;
 
-
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.Section;
@@ -22,11 +21,15 @@ public class EnrollmentController {
 
     @Autowired
     EnrollmentRepository enrollmentRepository;
+
     @Autowired
     private SectionRepository sectionRepository;
 
-    // instructor downloads student enrollments for a section, ordered by student name
-    // user must be instructor for the section
+    @Autowired
+    private RegistrarServiceProxy registrarServiceProxy;
+
+    // Instructor downloads student enrollments for a section, ordered by student name
+    // User must be instructor for the section
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(
             @PathVariable("sectionNo") int sectionNo ) {
@@ -62,24 +65,22 @@ public class EnrollmentController {
         return dto_list;
     }
 
-    // instructor uploads enrollments with the final grades for the section
-    // user must be instructor for the section
+    // Instructor uploads enrollments with the final grades for the section
+    // User must be instructor for the section
     @PutMapping("/enrollments")
     public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
 
-        // For each EnrollmentDTO in the list
-        //  find the Enrollment entity using enrollmentId
-        //  update the grade and save back to database
-        for(EnrollmentDTO d : dlist) {
+        for (EnrollmentDTO d : dlist) {
             Enrollment e = enrollmentRepository.findById(d.enrollmentId()).orElse(null);
-            if(e == null) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found " +d.enrollmentId() );
+            if (e == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found " + d.enrollmentId());
             }
             e.setGrade(d.grade());
-
             enrollmentRepository.save(e);
-        }
 
+            registrarServiceProxy.sendMessage("updateEnrollment " + RegistrarServiceProxy.asJsonString(d));
+        }
     }
 
+    // Add other necessary endpoints as required
 }
