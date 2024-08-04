@@ -46,12 +46,29 @@ public class AssignmentController {
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
     // Haris
-    @GetMapping("/sections/{secNo}/assignments")
-    public List<AssignmentDTO> getAssignments(
-            @PathVariable("secNo") int secNo) {
-        Optional<Section> section = sectionRepository.findById(secNo);
-        if (section.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Section %s not found", secNo));
+//    @GetMapping("/sections/{secNo}/assignments")
+//    public List<AssignmentDTO> getAssignments(
+//            @PathVariable("secNo") int secNo) {
+//        Optional<Section> section = sectionRepository.findById(secNo);
+//        if (section.isEmpty()) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Section %s not found", secNo));
+//        }
+
+    @GetMapping("/assignments")
+    public List<AssignmentStudentDTO> getStudentAssignments(
+            @RequestParam("year") int year,
+            @RequestParam("semester") String semester,
+            Principal principal) {
+
+        String email = principal.getName(); // Get the logged-in user's email
+        User student = userRepository.findByEmail(email); // Fetch the student entity by email
+        if(student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with email %s not found.", email));
+        }
+
+        Term term = termRepository.findByYearAndSemester(year, semester);
+        if(term == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Term not found");
         }
 
         List<Assignment> assignmentList = assignmentRepository.findBySectionNoOrderByDueDate(secNo);
