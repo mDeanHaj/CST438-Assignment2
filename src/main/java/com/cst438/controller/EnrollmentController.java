@@ -27,27 +27,15 @@ public class EnrollmentController {
     // instructor downloads student enrollments for a section, ordered by student name
     // user must be instructor for the section
 
-//    @GetMapping("/sections/{sectionNo}/enrollments")
-//    public List<EnrollmentDTO> getEnrollments(
-//            @PathVariable("sectionNo") int sectionNo ) {
-//
-//        Optional<Section> section = sectionRepository.findById(sectionNo);
-//        if (section.isEmpty()) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, sectionNo + " is not found.");
-//        }
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(
-            @PathVariable("sectionNo") int sectionNo,
-            Principal principal) {
+            @PathVariable("sectionNo") int sectionNo ) {
 
-        String instructorEmail = principal.getName(); // Get the logged-in instructor's email
-        Section section = sectionRepository.findById(sectionNo).orElse(null);
-        if (section == null) {
+        Optional<Section> section = sectionRepository.findById(sectionNo);
+        if (section.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, sectionNo + " is not found.");
         }
-        if (!section.getInstructor().getEmail().equals(instructorEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to view enrollments for this section.");
-        }
+
 
         List<Enrollment> enrollments= enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
         List<EnrollmentDTO> dto_list = new ArrayList<>();
