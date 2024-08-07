@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.security.Principal;
 
+import static java.lang.Integer.parseInt;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 public class StudentController {
@@ -85,10 +87,10 @@ public class StudentController {
    public List<EnrollmentDTO> getSchedule(
            @RequestParam("year") int year,
            @RequestParam("semester") String semester,
-           @RequestParam("studentId") int studentId,
            Principal principal) {
 
-       User student = userRepository.findById(studentId).orElse(null);
+        String studentId = principal.getName();
+        User student = userRepository.findByEmail(studentId);
        if(student == null) {
            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
        }
@@ -97,7 +99,7 @@ public class StudentController {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid year or semester");
        }
 
-       List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
+       List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, student.getId());
        List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
 
        for (Enrollment e : enrollments) {
