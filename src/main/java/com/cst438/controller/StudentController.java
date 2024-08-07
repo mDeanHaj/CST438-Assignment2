@@ -89,8 +89,8 @@ public class StudentController {
            @RequestParam("semester") String semester,
            Principal principal) {
 
-        String studentId = principal.getName();
-        User student = userRepository.findByEmail(studentId);
+       int studentId = userRepository.findByEmail(principal.getName()).getId();
+       User student = userRepository.findById(studentId).orElse(null);
        if(student == null) {
            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
        }
@@ -133,9 +133,9 @@ public class StudentController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public EnrollmentDTO addCourse(
 		    @PathVariable int sectionNo,
-            @RequestParam("studentId") int studentId,
             Principal principal) {
 
+        int studentId = userRepository.findByEmail(principal.getName()).getId();
         User student = userRepository.findById(studentId).orElse(null);
         if(student == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
