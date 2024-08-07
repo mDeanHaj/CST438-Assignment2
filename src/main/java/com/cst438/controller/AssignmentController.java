@@ -227,11 +227,11 @@ public class AssignmentController {
     @GetMapping("/assignments")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public List<AssignmentStudentDTO> getStudentAssignments(
-            @RequestParam("studentId") int studentId,
             @RequestParam("year") int year,
             @RequestParam("semester") String semester, Principal principal) {
 
-        User student = userRepository.findById(studentId).orElse(null);
+        String studentId = principal.getName();
+        User student = userRepository.findByEmail(studentId);
         if(student == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("ERROR: Student with id %s not found.", studentId));
         }
@@ -244,10 +244,10 @@ public class AssignmentController {
         // return a list of assignments and (if they exist) the assignment grade
         //  for all sections that the student is enrolled for the given year and semester
 		//  hint: use the assignment repository method findByStudentIdAndYearAndSemesterOrderByDueDate
-        List<Assignment> assignments = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(studentId, year, semester);
+        List<Assignment> assignments = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(student.getId(), year, semester);
         List<AssignmentStudentDTO> dto_list = new ArrayList<>();
         for (Assignment assignment : assignments) {
-            Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(assignment.getSection().getSectionNo(), studentId);
+            Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(assignment.getSection().getSectionNo(), student.getId());
             Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(e.getEnrollmentId(), assignment.getAssignmentId());
             if (grade == null) {
                 dto_list.add(new AssignmentStudentDTO(
